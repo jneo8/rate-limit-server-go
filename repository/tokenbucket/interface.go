@@ -2,7 +2,7 @@ package tokenbucket
 
 // TokenBucket ...
 type TokenBucket interface {
-	Visit(ip string) bool
+	Get(ip string) int
 	Supplement(t int64) error
 	Run() error
 }

@@ -14,6 +14,7 @@ type repo struct {
 }
 
 func (r *repo) Run() error {
+	r.Logger.Info("Start tokenbucket")
 	ticker := time.NewTicker(1 * time.Second).C
 	wg := sync.WaitGroup{}
 
@@ -28,12 +29,12 @@ func (r *repo) Run() error {
 }
 
 // Visit return true if ip rate limit < settings limit.
-func (r *repo) Visit(ip string) bool {
+func (r *repo) Get(ip string) int {
 	r.increment(ip)
 	v, ok := r.Bucket.LoadOrStore(ip, 1)
 	// First time
 	if !ok {
-		return true
+		return 1
 	}
 
 	n, ok := v.(int)
@@ -42,11 +43,9 @@ func (r *repo) Visit(ip string) bool {
 		r.Bucket.Delete(ip)
 	}
 
-	if n >= 60 {
-		return false
-	}
-	r.Bucket.Store(ip, n+1)
-	return true
+	n++
+	r.Bucket.Store(ip, n)
+	return n
 }
 
 // Supplement token to bucket.

@@ -11,11 +11,11 @@ func TestRateLimitWork(t *testing.T) {
 	tokenBucket := New()
 	go tokenBucket.Run()
 	for i := 0; i <= 120; i++ {
-		pass := tokenBucket.Visit("A")
-		if i < 60 && !pass {
+		n := tokenBucket.Get("A")
+		if i < 60 && n > 60 {
 			t.Error("Rate limit not work when access < 60")
 		}
-		if i >= 60 && pass {
+		if i >= 60 && n < 60 {
 			t.Error("Rate limit not work when access > 60")
 		}
 	}
@@ -25,7 +25,7 @@ func TestRateLimitWork(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		time.Sleep(time.Second * 2)
-		if pass := tokenBucket.Visit("A"); pass {
+		if n := tokenBucket.Get("A"); n < 60 {
 			t.Error("Rate limit not work after 2 secs")
 		}
 	}()
@@ -34,7 +34,7 @@ func TestRateLimitWork(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		time.Sleep(time.Second * 11)
-		if pass := tokenBucket.Visit("A"); !pass {
+		if n := tokenBucket.Get("A"); n > 60 {
 			t.Error("Rate limit not work after 10 secs")
 		}
 	}()
