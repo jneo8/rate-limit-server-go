@@ -6,12 +6,13 @@ import (
 )
 
 // New return new TokenBucket.
-func New() TokenBucket {
+func New(period int) TokenBucket {
 	logger := log.New()
 	return &repo{
 		Bucket:           &sync.Map{},
 		SupplementBucket: make(map[int64][]string),
 		RWMutex:          &sync.RWMutex{},
 		Logger:           logger,
+		Period:           period,
 	}
 }

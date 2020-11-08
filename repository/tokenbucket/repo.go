@@ -11,6 +11,7 @@ type repo struct {
 	Logger           *log.Logger
 	SupplementBucket map[int64][]string
 	RWMutex          *sync.RWMutex
+	Period           int
 }
 
 func (r *repo) Run() error {
@@ -21,7 +22,7 @@ func (r *repo) Run() error {
 	wg.Add(1)
 	go func() {
 		for t := range ticker {
-			r.Supplement(t.Add(-10 * time.Second).Unix())
+			r.Supplement(t.Add(-1 * time.Duration(r.Period) * time.Second).Unix())
 		}
 	}()
 	wg.Wait()
