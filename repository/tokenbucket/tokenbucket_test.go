@@ -1,6 +1,8 @@
 package tokenbucket
 
 import (
+	"github.com/stretchr/testify/assert"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -39,5 +41,36 @@ func TestRateLimitWork(t *testing.T) {
 			t.Error("Rate limit not work after time period")
 		}
 	}()
+	wg.Wait()
+}
+
+func TestTokenBucketConcurrentAccess10User(t *testing.T) {
+	rateLimitMultiIP(t, 10, 10, 2)
+}
+
+func TestTokenBucketConcurrentAccess100User(t *testing.T) {
+	rateLimitMultiIP(t, 100, 1000, 2)
+}
+
+func TestTokenBucketConcurrentAccess1000User(t *testing.T) {
+	rateLimitMultiIP(t, 1000, 1000, 2)
+}
+
+func rateLimitMultiIP(t *testing.T, goroutines int, ops int, period int) {
+	wg := sync.WaitGroup{}
+
+	tokenBucket := New(period)
+	go tokenBucket.Run()
+
+	wg.Add(goroutines)
+	for i := 0; i < goroutines; i++ {
+		go func(i int) {
+			defer wg.Done()
+			for j := 1; j <= ops; j++ {
+				n := tokenBucket.Get("A" + strconv.Itoa(i))
+				assert.Equal(t, j, n)
+			}
+		}(i)
+	}
 	wg.Wait()
 }

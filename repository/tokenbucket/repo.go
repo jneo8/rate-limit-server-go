@@ -64,11 +64,12 @@ func (r *repo) Supplement(t int64) error {
 
 func (r *repo) decreaseBucket(ip string) {
 	if v, ok := r.Bucket.Load(ip); ok {
-		if v == 1 {
-			r.Bucket.Delete(v)
-		}
 		if n, typeOk := v.(int); typeOk {
-			r.Bucket.Store(ip, n-1)
+			if n <= 1 {
+				r.Bucket.Delete(v)
+			} else {
+				r.Bucket.Store(ip, n-1)
+			}
 		}
 	}
 }
