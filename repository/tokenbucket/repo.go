@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Repo implement the in-memory token bucket.
 type repo struct {
 	Bucket           *sync.Map
 	Logger           *log.Logger
@@ -22,6 +23,7 @@ func (r *repo) Run() error {
 	wg.Add(1)
 	go func() {
 		for t := range ticker {
+			// Supplement tokens every second
 			if err := r.Supplement(t.Add(-1 * time.Duration(r.Period) * time.Second).Unix()); err != nil {
 				log.Fatal(err)
 			}
@@ -59,12 +61,13 @@ func (r *repo) Supplement(t int64) error {
 	}
 
 	for _, ip := range ips {
-		r.decreaseBucket(ip)
+		r.decrease(ip)
 	}
 	return nil
 }
 
-func (r *repo) decreaseBucket(ip string) {
+// Decrease the connection number by ip.
+func (r *repo) decrease(ip string) {
 	if v, ok := r.Bucket.Load(ip); ok {
 		if n, typeOk := v.(int); typeOk {
 			if n <= 1 {
@@ -76,6 +79,7 @@ func (r *repo) decreaseBucket(ip string) {
 	}
 }
 
+// Add the ip to the SupplementBucket.
 func (r *repo) increment(ip string) {
 	r.RWMutex.Lock()
 	defer r.RWMutex.Unlock()
