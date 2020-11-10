@@ -22,7 +22,9 @@ func (r *repo) Run() error {
 	wg.Add(1)
 	go func() {
 		for t := range ticker {
-			r.Supplement(t.Add(-1 * time.Duration(r.Period) * time.Second).Unix())
+			if err := r.Supplement(t.Add(-1 * time.Duration(r.Period) * time.Second).Unix()); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}()
 	wg.Wait()

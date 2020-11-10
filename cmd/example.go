@@ -26,5 +26,7 @@ func main() {
 			c.String(200, strconv.Itoa(n))
 		}
 	})
-	r.Run()
+	if err := r.Run(); err != nil {
+		log.Fatal(err)
+	}
 }

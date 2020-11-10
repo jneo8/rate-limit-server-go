@@ -12,7 +12,12 @@ import (
 func TestRateLimitWork(t *testing.T) {
 	tokenBucket := New(5)
 
-	go tokenBucket.Run()
+	go func() {
+		if err := tokenBucket.Run(); err != nil {
+			t.Error(err)
+		}
+	}()
+
 	for i := 0; i <= 200; i++ {
 		n := tokenBucket.Get("A")
 		if i < 60 && n > 60 {
@@ -60,7 +65,11 @@ func rateLimitMultiIP(t *testing.T, goroutines int, ops int, period int) {
 	wg := sync.WaitGroup{}
 
 	tokenBucket := New(period)
-	go tokenBucket.Run()
+	go func() {
+		if err := tokenBucket.Run(); err != nil {
+			t.Error(err)
+		}
+	}()
 
 	wg.Add(goroutines)
 	for i := 0; i < goroutines; i++ {
